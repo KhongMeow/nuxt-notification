@@ -6,7 +6,7 @@
 
 <script setup lang="ts">
 import { useNotification } from '~/composables/useNotification'
-const { sendNotification } = useNotification()
+const { sendNotification, requestPermission } = useNotification()
 
 const sent = async () => {
   await sendNotification('New Message', {

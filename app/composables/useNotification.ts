@@ -44,7 +44,7 @@ const registerSW = async () => {
     return registration;
 };
 
-const requestNotificationPermission = async () => {
+const requestPermission = async () => {
     // Must be called from a user gesture on mobile
     const permission = await Notification.requestPermission();
     if (permission !== 'granted') {
@@ -58,7 +58,7 @@ async function sendNotification(title: string, options?: NotificationOptions) {
     checkPermission();
     const reg = await registerSW();
     await navigator.serviceWorker.ready;
-    await requestNotificationPermission();
+    await requestPermission();
 
     await reg.showNotification(title, {
         icon: '/4Logo.png', // optional icon
@@ -67,6 +67,7 @@ async function sendNotification(title: string, options?: NotificationOptions) {
 };
 
   return {
-    sendNotification
+    sendNotification,
+    requestPermission,
   }
 }
