@@ -9,7 +9,10 @@ import { useNotification } from '~/composables/useNotification'
 const { sendNotification } = useNotification()
 
 const sent = async () => {
-  await sendNotification()
+  await sendNotification('New Message', {
+    body: "Meow.............!",
+    tag: 'chat-message',
+  })
 }
 
 </script>
