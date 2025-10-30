@@ -54,6 +54,7 @@ export async function sendNotification(title: string, options?: NotificationOpti
     await reg.showNotification(title, {
       body: options?.body,
       icon: '/4Logo.png',
+      tag: options?.tag,
       // ...options,
     });
 };
