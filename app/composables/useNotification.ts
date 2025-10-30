@@ -41,14 +41,18 @@ const requestNotificationPermission = async () => {
     return permission;
 };
 
-export async function enableNotifications() {
+export async function sendNotification(title: string, options?: NotificationOptions) {
     checkPermission();
     const reg = await registerSW();
     await navigator.serviceWorker.ready;
     await requestNotificationPermission();
 
-    await reg.showNotification("Meow...!", {
-        body: "Meow...!",
-        icon: '4Logo.png',
+    // await reg.showNotification("Meow...!", {
+    //     body: "Meow...!",
+    //     icon: '4Logo.png',
+    // });
+    await reg.showNotification(title, {
+      icon: '/4Logo.png',
+      ...options,
     });
 };
