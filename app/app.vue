@@ -11,7 +11,7 @@ const { sendNotification, requestPermission } = useNotification()
 let count = 0
 async function sent() {
   await sendNotification('New Message', {
-    body: `Meow.............!${++count}`,
+    body: `Meow.............! You have ${++count} new messages.`,
     tag: 'chat-message',
   })
 }
