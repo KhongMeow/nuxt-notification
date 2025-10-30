@@ -52,9 +52,15 @@ export async function sendNotification(title: string, options?: NotificationOpti
     //     icon: '4Logo.png',
     // });
     await reg.showNotification(title, {
-      body: options?.body,
       icon: '/4Logo.png',
+      body: options?.body,
       tag: options?.tag,
-      // ...options,
+
+      badge: options?.badge,
+      data: options?.data,
+      dir: options?.dir,
+      lang: options?.lang,
+      requireInteraction: options?.requireInteraction,
+      silent: options?.silent,
     });
 };
