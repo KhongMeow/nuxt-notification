@@ -47,12 +47,12 @@ export async function sendNotification(title: string, options?: NotificationOpti
     await navigator.serviceWorker.ready;
     await requestNotificationPermission();
 
-    // await reg.showNotification("Meow...!", {
-    //     body: "Meow...!",
-    //     icon: '4Logo.png',
-    // });
-    await reg.showNotification(title, {
-      icon: '/4Logo.png',
-      ...options,
+    await reg.showNotification("Meow...!", {
+        body: "Meow...!",
+        icon: '4Logo.png',
     });
+    // await reg.showNotification(title, {
+    //   icon: '/4Logo.png',
+    //   ...options,
+    // });
 };
