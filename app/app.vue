@@ -8,9 +8,10 @@
 import { useNotification } from '~/composables/useNotification'
 const { sendNotification, requestPermission } = useNotification()
 
+let count = 0
 async function sent() {
   await sendNotification('New Message', {
-    body: "Meow.............!",
+    body: `Meow.............!${++count}`,
     tag: 'chat-message',
   })
 }
