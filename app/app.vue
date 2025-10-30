@@ -5,17 +5,13 @@
 </template>
 
 <script setup lang="ts">
-import { sendNotification } from '~/composables/useNotification'
-// import { enableNotifications } from '~/composables/useNotification'
+import { useNotification } from '~/composables/useNotification'
+const { sendNotification, requestPermission } = useNotification()
 
-let count = 0
-async function sent() {
+const sent = async () => {
   await sendNotification('New Message', {
-    body: `Meow.............!`,
-    tag: 'chat-message',
+    body: "Meow.............!",
   })
-
-  // await enableNotifications()
 }
 
 </script>

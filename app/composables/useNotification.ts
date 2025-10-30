@@ -1,10 +1,18 @@
-const isiOS = () =>
+// Augment Navigator to include iOS Safari PWA flag
+declare global {
+  interface Navigator {
+    standalone?: boolean;
+  }
+}
+
+export const useNotification = () => {  
+  const isiOS = () =>
   /iPhone|iPad|iPod/.test(navigator.userAgent) ||
   (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
 
 const isStandalone = () =>
   window.matchMedia?.('(display-mode: standalone)').matches ||
-  (('standalone' in window.navigator) && (window.navigator as any).standalone === true);
+  window.navigator.standalone === true;
 
 const notificationsSupported = () =>
   ('serviceWorker' in navigator) &&
@@ -12,16 +20,20 @@ const notificationsSupported = () =>
 
 const checkPermission = () => {
     if (!('serviceWorker' in navigator)) {
+      alert("No support for service worker!");
         throw new Error("No support for service worker!");
     }
     // iOS requires an installed Home Screen app
     if (isiOS() && !isStandalone()) {
-        throw new Error("On iOS, enable notifications by adding this app to the Home Screen, then open it from there.");
+      alert("On iOS, enable notifications by adding this app to the Home Screen, then open it from there.");
+      throw new Error("On iOS, enable notifications by adding this app to the Home Screen, then open it from there.");
     }
     if (!notificationsSupported()) {
-        throw new Error("Notifications are not supported on this browser/device.");
+      alert("Notifications are not supported on this browser/device.");
+      throw new Error("Notifications are not supported on this browser/device.");
     }
     if (!(window.isSecureContext || location.hostname === 'localhost')) {
+      alert("Notifications require HTTPS or localhost.");
         throw new Error("Notifications require HTTPS or localhost.");
     }
 };
@@ -32,35 +44,30 @@ const registerSW = async () => {
     return registration;
 };
 
-const requestNotificationPermission = async () => {
+const requestPermission = async () => {
     // Must be called from a user gesture on mobile
     const permission = await Notification.requestPermission();
     if (permission !== 'granted') {
+      alert("Notification permission not granted");
         throw new Error("Notification permission not granted");
     }
     return permission;
 };
 
-export async function sendNotification(title: string, options?: NotificationOptions) {
+async function sendNotification(title: string, options?: NotificationOptions) {
     checkPermission();
     const reg = await registerSW();
     await navigator.serviceWorker.ready;
-    await requestNotificationPermission();
+    await requestPermission();
 
-    // await reg.showNotification("Meow...!", {
-    //     body: "Meow...!",
-    //     icon: '4Logo.png',
-    // });
     await reg.showNotification(title, {
-      icon: '/4Logo.png',
-      body: options?.body,
-      tag: options?.tag,
-
-      badge: options?.badge,
-      data: options?.data,
-      dir: options?.dir,
-      lang: options?.lang,
-      requireInteraction: options?.requireInteraction,
-      silent: options?.silent,
+        icon: '/4Logo.png',
+        ...options,
     });
 };
+
+  return {
+    sendNotification,
+    requestPermission,
+  }
+}
