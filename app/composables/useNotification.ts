@@ -5,99 +5,69 @@ declare global {
   }
 }
 
-type NotifyOptions = NotificationOptions & {
-  data?: { url?: string; [k: string]: unknown };
+export const useNotification = () => {  
+  const isiOS = () =>
+  /iPhone|iPad|iPod/.test(navigator.userAgent) ||
+  (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+
+const isStandalone = () =>
+  window.matchMedia?.('(display-mode: standalone)').matches ||
+  window.navigator.standalone === true;
+
+const notificationsSupported = () =>
+  ('serviceWorker' in navigator) &&
+  (('Notification' in window) || ('showNotification' in ServiceWorkerRegistration.prototype));
+
+const checkPermission = () => {
+    if (!('serviceWorker' in navigator)) {
+      alert("No support for service worker!");
+        throw new Error("No support for service worker!");
+    }
+    // iOS requires an installed Home Screen app
+    if (isiOS() && !isStandalone()) {
+      alert("On iOS, enable notifications by adding this app to the Home Screen, then open it from there.");
+      throw new Error("On iOS, enable notifications by adding this app to the Home Screen, then open it from there.");
+    }
+    if (!notificationsSupported()) {
+      alert("Notifications are not supported on this browser/device.");
+      throw new Error("Notifications are not supported on this browser/device.");
+    }
+    if (!(window.isSecureContext || location.hostname === 'localhost')) {
+      alert("Notifications require HTTPS or localhost.");
+        throw new Error("Notifications require HTTPS or localhost.");
+    }
 };
 
-export const useNotification = () => {
-  const isClient = typeof window !== 'undefined' && typeof navigator !== 'undefined';
-  let regPromise: Promise<ServiceWorkerRegistration | null> | null = null;
+const registerSW = async () => {
+    // Keep SW at site root for widest scope on GitHub Pages
+    const registration = await navigator.serviceWorker.register('sw.js');
+    return registration;
+};
 
-  const isiOS = () =>
-    isClient &&
-    (/iPhone|iPad|iPod/.test(navigator.userAgent) ||
-      (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1));
-
-  const isStandalone = () =>
-    isClient &&
-    (window.matchMedia?.('(display-mode: standalone)').matches ||
-      window.navigator.standalone === true);
-
-  const isSupported = () =>
-    isClient &&
-    'serviceWorker' in navigator &&
-    (('Notification' in window) || ('showNotification' in ServiceWorkerRegistration.prototype));
-
-  const ensureSecure = () =>
-    isClient && (window.isSecureContext || location.hostname === 'localhost');
-
-  const registerSW = async () => {
-    if (!isClient || !('serviceWorker' in navigator)) return null;
-    if (regPromise) return regPromise;
-    // public/ is served from site root in Nuxt
-    regPromise = navigator.serviceWorker.register('/sw.js', { scope: '/' }).catch(() => null);
-    return regPromise;
-  };
-
-  const requestPermission = async (): Promise<NotificationPermission> => {
-    if (!isClient) return 'default';
-    if (!isSupported()) throw new Error('Notifications are not supported on this browser/device.');
-    if (!ensureSecure()) throw new Error('Notifications require HTTPS or localhost.');
-    if (isiOS() && !isStandalone()) {
-      throw new Error('On iOS, add this app to the Home Screen and open it from there to enable notifications.');
+const requestPermission = async () => {
+    // Must be called from a user gesture on mobile
+    const permission = await Notification.requestPermission();
+    if (permission !== 'granted') {
+      alert("Notification permission not granted");
+        throw new Error("Notification permission not granted");
     }
-    if (Notification.permission === 'granted') return 'granted';
-    const result = await Notification.requestPermission();
-    if (result !== 'granted') throw new Error('Notification permission not granted.');
-    return result;
-  };
+    return permission;
+};
 
-  const sendNotification = async (title: string, options: NotifyOptions = {}) => {
-    if (!isClient) return;
-    if (!isSupported()) throw new Error('Notifications are not supported on this browser/device.');
-    if (!ensureSecure()) throw new Error('Notifications require HTTPS or localhost.');
-
-    // Ensure SW is ready
+async function sendNotification(title: string, options?: NotificationOptions) {
+    await checkPermission();
     const reg = await registerSW();
     await navigator.serviceWorker.ready;
+    await requestPermission();
 
-    // Ensure permission
-    if (Notification.permission !== 'granted') {
-      await requestPermission();
-    }
-
-    const defaults: NotifyOptions = {
-      body: '',
-      icon: '/4Logo.png',
-      badge: '/4Logo.png',
-      tag: 'app-general',
-      renotify: false,
-      requireInteraction: false,
-      data: { url: '/', ...(options.data || {}) },
-      actions: [
-        { action: 'open', title: 'Open' },
-        { action: 'dismiss', title: 'Dismiss' },
-      ],
-    };
-
-    const payload = { ...defaults, ...options, data: { ...defaults.data, ...(options.data || {}) } };
-
-    // Prefer SW notification API; fallback to window Notification if needed
-    if (reg && 'showNotification' in reg) {
-      await reg.showNotification(title, payload);
-    } else if ('Notification' in window) {
-      // Fallback (click handling is limited)
-      const n = new Notification(title, payload);
-      n.onclick = () => window.open(payload.data?.url || '/', '_self');
-    } else {
-      throw new Error('No available notification API.');
-    }
-  };
+    await reg.showNotification(title, {
+        icon: '/4Logo.png', // optional icon
+        ...options,
+    });
+};
 
   return {
-    isSupported,
-    requestPermission,
     sendNotification,
-    registerSW, // optional: call on app mount to pre-register
-  };
-};
+    requestPermission,
+  }
+}
