@@ -55,7 +55,7 @@ const requestPermission = async () => {
 };
 
 async function sendNotification(title: string, options?: NotificationOptions) {
-    checkPermission();
+    await checkPermission();
     const reg = await registerSW();
     await navigator.serviceWorker.ready;
     await requestPermission();
