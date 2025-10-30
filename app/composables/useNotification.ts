@@ -47,12 +47,13 @@ export async function sendNotification(title: string, options?: NotificationOpti
     await navigator.serviceWorker.ready;
     await requestNotificationPermission();
 
-    // Resolve icon relative to the SW scope (works with sub-path deployments)
-    const iconUrl = new URL('4Logo.png', reg.scope).toString();
-
-    // Send a single notification
+    // await reg.showNotification("Meow...!", {
+    //     body: "Meow...!",
+    //     icon: '4Logo.png',
+    // });
     await reg.showNotification(title, {
-        ...(options ?? {}),
-        icon: iconUrl, // ensure a valid, scope-aware URL
+      body: options?.body,
+      icon: '/4Logo.png',
+      ...options,
     });
-}
+};
