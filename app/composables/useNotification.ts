@@ -32,7 +32,7 @@ const registerSW = async () => {
   return registration;
 };
 
-export async function requestPermission() {
+const requestPermission = async () => {
   // Must be called from a user gesture on mobile
   const permission = await Notification.requestPermission();
   if (permission !== 'granted') {

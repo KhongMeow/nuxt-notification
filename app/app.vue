@@ -5,7 +5,7 @@
 </template>
 
 <script setup lang="ts">
-import { sendNotification, requestPermission } from '~/composables/useNotification'
+import { sendNotification } from '~/composables/useNotification'
 
 let count = 0
 async function sent() {
