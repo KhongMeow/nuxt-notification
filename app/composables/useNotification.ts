@@ -32,7 +32,7 @@ const registerSW = async () => {
   return registration;
 };
 
-const requestPermission = async () => {
+export async function requestPermission() {
   // Must be called from a user gesture on mobile
   const permission = await Notification.requestPermission();
   if (permission !== 'granted') {
@@ -41,7 +41,7 @@ const requestPermission = async () => {
   return permission;
 };
 
-const sendNotification = async (title: string, options?: NotificationOptions) => {
+export async function sendNotification(title: string, options?: NotificationOptions) {
   checkPermission();
   const reg = await registerSW();
   await navigator.serviceWorker.ready;
@@ -52,10 +52,3 @@ const sendNotification = async (title: string, options?: NotificationOptions) =>
     ...options,
   });
 };
-
-export function useNotification() {
-  return {
-    sendNotification,
-    requestPermission,
-  };
-}
